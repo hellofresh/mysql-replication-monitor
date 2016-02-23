@@ -63,13 +63,14 @@ class ReplicationChecker(object):
 
     def track_lag(self, slave_sql_running_state):
         if os.path.isfile('lag.lock'):
-            with open('lag.lock', 'r') as f:
-                timestamp = int(f.read())
-                current_timestamp = int(time.time())
-                difference_in_mintues = \
-                    (current_timestamp - timestamp) / 60
-                if difference_in_mintues >= 5:
-                    self.raise_lag_warning(slave_sql_running_state)
+            if not os.path.isfile('warning.lock'):
+                with open('lag.lock', 'r') as f:
+                    timestamp = int(f.read())
+                    current_timestamp = int(time.time())
+                    difference_in_mintues = \
+                        (current_timestamp - timestamp) / 60
+                    if difference_in_mintues >= 5:
+                        self.raise_lag_warning(slave_sql_running_state)
         else:
             self.write_lock('lag')
 
