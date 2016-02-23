@@ -12,7 +12,7 @@ python run.py
 
 Example cron tab entry:
 ```
-* * * * * python /path/to/repo/mysql-replication-monitor/run.py
+*/5 * * * * python /path/to/repo/mysql-replication-monitor/run.py
 ```
 
 ## TODO:
