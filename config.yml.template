@@ -1,0 +1,8 @@
+mysql:
+    user: ''
+    password: ''
+    host: 'localhost'
+    raise_on_warnings: True
+    port: 3306
+
+webhook_url: 'https://hooks.slack.com/services/XXXXX/XXXXX/XXXXX'
