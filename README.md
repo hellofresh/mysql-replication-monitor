@@ -18,3 +18,7 @@ Example cron tab entry:
 ## TODO:
 1. Add Email Notifications
 2. Make lag interval and duration configurable
+
+
+## License:
+MIT
