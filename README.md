@@ -14,3 +14,7 @@ Example cron tab entry:
 ```
 * * * * * python /path/to/repo/mysql-replication-monitor/run.py
 ```
+
+## TODO:
+1. Add Email Notifications
+2. Make lag interval and duration configurable
