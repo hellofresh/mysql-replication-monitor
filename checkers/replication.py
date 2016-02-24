@@ -2,6 +2,7 @@ import mysql.connector
 import datetime
 import os
 import time
+import logging
 
 
 class ReplicationChecker(object):
@@ -35,6 +36,12 @@ class ReplicationChecker(object):
             seconds_behind_master = replication_status_row[32]
             slave_sql_running_state = replication_status_row[44]
 
+            logging.info('Last Error No: ' + str(last_error_no))
+            logging.info('Last Error: ' + str(last_error_no))
+            logging.info('Seconds behind master: ' + str(seconds_behind_master))
+            logging.info(
+                'slave_sql_running_state: ' + str(slave_sql_running_state))
+
             if last_error_no != 0:
                 self.raise_replication_error(last_error,
                                              slave_sql_running_state)
@@ -62,6 +69,7 @@ class ReplicationChecker(object):
         self.write_lock('danger')
 
     def track_lag(self, slave_sql_running_state):
+        logging.DEBUG('There is a lag of more than 300 seconds')
         if os.path.isfile('lag.lock'):
             if not os.path.isfile('warning.lock'):
                 with open('lag.lock', 'r') as f:
@@ -71,6 +79,10 @@ class ReplicationChecker(object):
                         (current_timestamp - timestamp) / 60
                     if difference_in_mintues >= 5:
                         self.raise_lag_warning(slave_sql_running_state)
+                    else:
+                        logging.DEBUG(
+                            "Hasn't been lagging for more "
+                            "than 5 minutes. Still Cool.")
         else:
             self.write_lock('lag')
 
@@ -87,6 +99,7 @@ class ReplicationChecker(object):
         })
 
         self.write_lock('warning')
+        logging.warn('The lag has lasted longer than 5 minutes.')
 
     def confirm_normality(self):
         if os.path.isfile('danger.lock') or os.path.isfile(
@@ -101,6 +114,7 @@ class ReplicationChecker(object):
             })
 
         self.clear_locks()
+        logging.info('Everything is OK!')
 
     def raise_exception(self, error):
         self.messages.append({
