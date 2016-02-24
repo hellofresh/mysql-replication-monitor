@@ -123,7 +123,7 @@ class ReplicationChecker(object):
 
     @staticmethod
     def write_lock(status):
-        if not os.path.isfile('danger.lock'):
+        if not os.path.isfile(status + '.lock'):
             with open(status + '.lock', 'w') as f:
                 f.write(str(int(time.time())))
 
