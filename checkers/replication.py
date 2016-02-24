@@ -69,7 +69,7 @@ class ReplicationChecker(object):
         self.write_lock('danger')
 
     def track_lag(self, slave_sql_running_state):
-        logging.DEBUG('There is a lag of more than 300 seconds')
+        logging.debug('There is a lag of more than 300 seconds')
         if os.path.isfile('lag.lock'):
             if not os.path.isfile('warning.lock'):
                 with open('lag.lock', 'r') as f:
@@ -80,7 +80,7 @@ class ReplicationChecker(object):
                     if difference_in_mintues >= 5:
                         self.raise_lag_warning(slave_sql_running_state)
                     else:
-                        logging.DEBUG(
+                        logging.debug(
                             "Hasn't been lagging for more "
                             "than 5 minutes. Still Cool.")
         else:
