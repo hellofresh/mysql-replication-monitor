@@ -15,6 +15,10 @@ class ReplicationChecker(object):
         self.notifiers = []
         self.messages = []
 
+        self.LAG_LOCK = os.path.join(self.project_directory, 'lag.lock')
+        self.WARNING_LOCK = os.path.join(self.project_directory, 'warning.lock')
+        self.DANGER_LOCK = os.path.join(self.project_directory, 'danger.lock')
+
     def add_notifier(self, notifier):
         self.notifiers.append(notifier)
 
@@ -71,9 +75,9 @@ class ReplicationChecker(object):
 
     def track_lag(self, slave_sql_running_state):
         logging.debug('There is a lag of more than 300 seconds')
-        if os.path.isfile('lag.lock'):
-            if not os.path.isfile('warning.lock'):
-                with open('lag.lock', 'r') as f:
+        if os.path.isfile(self.LAG_LOCK):
+            if not os.path.isfile(self.WARNING_LOCK):
+                with open(self.LAG_LOCK, 'r') as f:
                     timestamp = int(f.read())
                     current_timestamp = int(time.time())
                     difference_in_mintues = \
@@ -103,8 +107,8 @@ class ReplicationChecker(object):
         logging.warn('The lag has lasted longer than 5 minutes.')
 
     def confirm_normality(self):
-        if os.path.isfile('danger.lock') or os.path.isfile(
-                'warning.lock'):
+        if os.path.isfile(self.DANGER_LOCK) or os.path.isfile(
+                self.WARNING_LOCK):
             self.messages.append({
                 'status': 'good',
                 'short_message': 'Everything is back to normal',
@@ -127,14 +131,13 @@ class ReplicationChecker(object):
 
         self.write_lock('danger')
 
-    @staticmethod
-    def clear_locks():
-        if os.path.isfile('danger.lock'):
-            os.remove('danger.lock')
-        if os.path.isfile('lag.lock'):
-            os.remove('lag.lock')
-        if os.path.isfile('warning.lock'):
-            os.remove('warning.lock')
+    def clear_locks(self):
+        if os.path.isfile(self.DANGER_LOCK):
+            os.remove(self.DANGER_LOCK)
+        if os.path.isfile(self.LAG_LOCK):
+            os.remove(self.LAG_LOCK)
+        if os.path.isfile(self.WARNING_LOCK):
+            os.remove(self.WARNING_LOCK)
 
     def write_lock(self, status):
         file_path = os.path.join(self.project_directory, status + '.lock')
