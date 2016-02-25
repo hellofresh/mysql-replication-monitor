@@ -19,6 +19,7 @@ if __name__ == '__main__':
 
     notifier = SlackNotifier(webhook_url=config['webhook_url'])
     checker = ReplicationChecker(
+        project_directory=directory,
         user=config['mysql']['user'],
         password=config['mysql']['password'],
         host=config['mysql']['host'],

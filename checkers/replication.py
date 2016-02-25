@@ -6,7 +6,8 @@ import logging
 
 
 class ReplicationChecker(object):
-    def __init__(self, user, password, host='local', port=3306):
+    def __init__(self, project_directory, user, password, host='local', port=3306):
+        self.project_directory = project_directory
         self.user = user
         self.password = password
         self.host = host
@@ -54,7 +55,7 @@ class ReplicationChecker(object):
             self.raise_exception(error)
 
         if self.messages:
-            self.trigger_notifications()
+            pass # self.trigger_notifications()
 
     def raise_replication_error(self, last_error, slave_sql_running_state):
         self.messages.append({
@@ -135,10 +136,10 @@ class ReplicationChecker(object):
         if os.path.isfile('warning.lock'):
             os.remove('warning.lock')
 
-    @staticmethod
-    def write_lock(status):
-        if not os.path.isfile(status + '.lock'):
-            with open(status + '.lock', 'w') as f:
+    def write_lock(self, status):
+        file_path = os.path.join(self.project_directory, status + '.lock')
+        if not os.path.isfile(file_path):
+            with open(file_path, 'w') as f:
                 f.write(str(int(time.time())))
 
     def trigger_notifications(self):
