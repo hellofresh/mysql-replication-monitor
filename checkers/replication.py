@@ -73,8 +73,7 @@ class ReplicationChecker(object):
             self.raise_exception(error)
 
         if self.messages:
-            print self.messages
-            # self.trigger_notifications()
+            self.trigger_notifications()
 
     def raise_replication_error(self, last_error, slave_sql_running_state):
         self.messages.append({
