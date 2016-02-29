@@ -64,8 +64,8 @@ class ReplicationChecker(object):
             if last_error_no != 0:
                 self.raise_replication_error(last_error,
                                              slave_sql_running_state)
-            elif seconds_behind_master > self.lag_interval:
-                self.track_lag(slave_sql_running_state)
+            elif seconds_behind_master >= self.lag_interval:
+                self.track_lag(slave_sql_running_state, seconds_behind_master)
             else:
                 self.confirm_normality()
 
@@ -73,7 +73,8 @@ class ReplicationChecker(object):
             self.raise_exception(error)
 
         if self.messages:
-            self.trigger_notifications()
+            print self.messages
+            # self.trigger_notifications()
 
     def raise_replication_error(self, last_error, slave_sql_running_state):
         self.messages.append({
@@ -87,7 +88,7 @@ class ReplicationChecker(object):
 
         self.write_lock('danger')
 
-    def track_lag(self, slave_sql_running_state):
+    def track_lag(self, slave_sql_running_state, seconds_behind_master):
         logging.debug('There is a lag of more than 300 seconds')
         if os.path.isfile(self.LAG_LOCK):
             if not os.path.isfile(self.WARNING_LOCK):
@@ -96,7 +97,8 @@ class ReplicationChecker(object):
                     current_timestamp = int(time.time())
                     difference = current_timestamp - timestamp
                     if difference >= self.lag_duration:
-                        self.raise_lag_warning(slave_sql_running_state)
+                        self.raise_lag_warning(slave_sql_running_state,
+                                               seconds_behind_master)
                     else:
                         logging.debug(
                             "Hasn't been lagging for more "
@@ -104,14 +106,16 @@ class ReplicationChecker(object):
         else:
             self.write_lock('lag')
 
-    def raise_lag_warning(self, slave_sql_running_state):
+    def raise_lag_warning(self, slave_sql_running_state, seconds_behind_master):
         self.messages.append({
             'status': 'warning',
             'short_message': 'Replication Lag',
             'long_message':
-                'The replica is lagging more than 300s'
-                'behind master. Current state: %s'
-                % slave_sql_running_state,
+                'The replica is lagging more than %s seconds'
+                'behind master for longer than %s seconds. Current state: %s. '
+                'Current lag: %s seconds.'
+                % (str(self.lag_interval), str(self.lag_duration),
+                   slave_sql_running_state, seconds_behind_master),
             'time_string':
                 datetime.datetime.now().isoformat()
         })
