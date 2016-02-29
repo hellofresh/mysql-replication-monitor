@@ -6,8 +6,22 @@ import logging
 
 
 class ReplicationChecker(object):
-    def __init__(self, project_directory, user, password, host='local', port=3306):
+    def __init__(self, project_directory, lag_interval, lag_duration, user,
+                 password, host='local', port=3306):
+        """
+        A MySQL Replication Checker
+        :param project_directory: The project directory path
+        :param lag_interval: Lag interval in seconds
+        :param lag_duration: Lag duration in seconds
+        :param user: mysql user
+        :param password: mysql password
+        :param host: mysql host
+        :param port: mysql port
+        :return: None
+        """
         self.project_directory = project_directory
+        self.lag_interval = lag_interval
+        self.lag_duration = lag_duration
         self.user = user
         self.password = password
         self.host = host
@@ -50,7 +64,7 @@ class ReplicationChecker(object):
             if last_error_no != 0:
                 self.raise_replication_error(last_error,
                                              slave_sql_running_state)
-            elif seconds_behind_master > 300:
+            elif seconds_behind_master > self.lag_interval:
                 self.track_lag(slave_sql_running_state)
             else:
                 self.confirm_normality()
@@ -80,9 +94,8 @@ class ReplicationChecker(object):
                 with open(self.LAG_LOCK, 'r') as f:
                     timestamp = int(f.read())
                     current_timestamp = int(time.time())
-                    difference_in_mintues = \
-                        (current_timestamp - timestamp) / 60
-                    if difference_in_mintues >= 5:
+                    difference = current_timestamp - timestamp
+                    if difference >= self.lag_duration:
                         self.raise_lag_warning(slave_sql_running_state)
                     else:
                         logging.debug(
