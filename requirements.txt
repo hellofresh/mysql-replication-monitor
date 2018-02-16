@@ -1,0 +1,4 @@
+configparser
+mysql-connector
+pyyaml
+requests

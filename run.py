@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import yaml
 import logging
 import datetime
